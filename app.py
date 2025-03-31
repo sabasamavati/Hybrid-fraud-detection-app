@@ -4,7 +4,7 @@ import openai
 import numpy as np
 
 # استفاده از st.secrets برای API Key (مطمئن شوید کلید صحیح در Secrets وارد شده است)
-openai.api_key = st.secrets"OPENAI_API_KEY"
+openai.api_key = st.secrets["OPENAI_API_KEY"]
 
 # استفاده از st.session_state برای ناوبری بین صفحات
 if "show_llm_page" not in st.session_state:
