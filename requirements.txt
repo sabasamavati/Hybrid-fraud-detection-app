@@ -1,4 +1,4 @@
 streamlit
 pandas
-openai
 numpy
+openai==0.27.2
