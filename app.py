@@ -84,6 +84,10 @@ Tasks:
 4. Generate a concise, analyst-friendly summary.
 5. Provide a recommended action for the fraud analyst (e.g., escalate, refund, contact merchant).
 
+IMPORTANT:
+- You MUST strictly follow the output format.
+- If any section is unknown, produce a placeholder.
+
 Output format (strictly):
 Original Dispute Text: <...>
 Intent Category: <...>
@@ -103,12 +107,16 @@ Recommendation: <...>
         return f"Error calling LLM: {str(e)}"
 
 ##############################
-# گام ۷: صفحه نمایش LLM (نتیجه تحلیل اعتراض)
+# گام ۷: صفحه نمایش LLM (نتیجه تحلیل اعتراض) - با افزودن Debug
 ##############################
 def show_llm_page():
     st.header("Dispute Transaction Analysis via AI Assistant")
     tx = st.session_state.selected_transaction
     llm_result = st.session_state.get("llm_result", "")
+    
+    # Debug: نمایش خروجی خام مدل
+    st.write("Debug LLM result (raw):")
+    st.write(llm_result)
     
     # Parse خروجی LLM به فرض فرمت تعیین‌شده
     lines = llm_result.splitlines()
@@ -175,7 +183,7 @@ def show_main_page():
             label, prob = predict_fraud(transaction)
             st.markdown(f"**XGBoost Label:** {label}")
             st.markdown(f"**Probability:** {prob:.2f}")
-            # اگر خروجی برابر "Dispute Transaction" باشد، دکمه Analyze with AI نمایش داده شود
+            # اگر خروجی برابر "Dispute Transaction" باشد، دکمه Analyze with AI Assistant نمایش داده شود
             if label == "Dispute Transaction":
                 if st.button(f"Analyze with AI Assistant - {transaction['id']}", key=f"btn_{transaction['id']}"):
                     st.session_state.selected_transaction = transaction
