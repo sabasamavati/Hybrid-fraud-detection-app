@@ -56,7 +56,7 @@ def predict_fraud(transaction):
     return label, prob
 
 ##############################
-# گام ۶: تابع تحلیل Dispute توسط LLM (با Prompt دقیق)
+# گام ۶: تابع تحلیل Dispute توسط LLM (با Prompt دقیق و اضافه کردن Recommendation)
 ##############################
 def analyze_dispute_with_llm(transaction_info):
     # ایجاد متن کامل اعتراض با استفاده از اطلاعات تراکنش
@@ -82,12 +82,14 @@ Tasks:
 2. Identify the Intent Category (e.g., 'Unauthorized/Fraud', 'Merchant Error', or 'Unclear').
 3. Assess the Fraud Risk Score (High, Medium, or Low) with a short explanation.
 4. Generate a concise, analyst-friendly summary.
+5. Provide a recommended action for the fraud analyst (e.g., escalate, refund, contact merchant).
 
 Output format (strictly):
 Original Dispute Text: <...>
 Intent Category: <...>
 Fraud Risk Score: <...>
 AI-generated Summary: <...>
+Recommendation: <...>
     """
     try:
         response = openai.ChatCompletion.create(
@@ -114,6 +116,7 @@ def show_llm_page():
     intent = ""
     risk = ""
     summary = ""
+    recommendation = ""
     for line in lines:
         if line.startswith("Original Dispute Text:"):
             original_text = line.split(":", 1)[1].strip()
@@ -123,12 +126,14 @@ def show_llm_page():
             risk = line.split(":", 1)[1].strip()
         elif line.startswith("AI-generated Summary:"):
             summary = line.split(":", 1)[1].strip()
+        elif line.startswith("Recommendation:"):
+            recommendation = line.split(":", 1)[1].strip()
     
     with st.expander("Original Dispute Text"):
         st.write(original_text if original_text else "No text provided.")
     
     st.markdown(f"**Intent Category:** `{intent}`")
-    # رنگ بندی برای Fraud Risk Score
+    
     risk_color = "green"
     if "High" in risk:
         risk_color = "red"
@@ -139,9 +144,11 @@ def show_llm_page():
         unsafe_allow_html=True
     )
     st.markdown(f"**AI-generated Summary:** {summary}")
+    st.markdown(f"**Recommendation:** {recommendation}")
     
     if st.button("Back to Main Page"):
         st.session_state.show_llm_page = False
+        st.write("Please refresh the page manually to return to the main page.")
 
 ##############################
 # گام ۸: صفحه اصلی داشبورد (نمایش تراکنش‌های Normal)
@@ -175,7 +182,7 @@ def show_main_page():
                     llm_output = analyze_dispute_with_llm(transaction)
                     st.session_state.llm_result = llm_output
                     st.session_state.show_llm_page = True
-
+    st.write("---")
     st.write("Please refresh the page manually to return to the main page.")
 
 ##############################
