@@ -4,7 +4,7 @@ import openai
 import numpy as np
 
 # تنظیم کلید API OpenAI (YOUR_API_KEY را با کلید واقعی جایگزین کنید)
-openai.api_key = "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"
+openai.api_key = "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"
 
 # استفاده از st.session_state برای ناوبری بین صفحات
 if "show_llm_page" not in st.session_state:
