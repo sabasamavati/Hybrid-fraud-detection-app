@@ -176,7 +176,8 @@ def show_main_page():
                     llm_output = analyze_dispute_with_llm(transaction)
                     st.session_state.llm_result = llm_output
                     st.session_state.show_llm_page = True
-                    st.experimental_rerun()
+                   # st.experimental_rerun()
+
     st.write("---")
 
 ##############################
