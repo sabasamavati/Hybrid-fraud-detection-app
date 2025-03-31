@@ -3,8 +3,8 @@ import pandas as pd
 import openai
 import numpy as np
 
-# تنظیم کلید API OpenAI (YOUR_API_KEY را با کلید واقعی جایگزین کنید)
-openai.api_key = "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"
+# استفاده از st.secrets برای API Key (مطمئن شوید کلید صحیح در Secrets وارد شده است)
+openai.api_key = st.secrets["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"]
 
 # استفاده از st.session_state برای ناوبری بین صفحات
 if "show_llm_page" not in st.session_state:
@@ -40,10 +40,7 @@ dispute_transactions = [
 # گام ۵: تابع شبیه‌سازی مدل XGBoost (با استفاده از پارامترهای تراکنش)
 ##############################
 def predict_fraud(transaction):
-    # در یک مدل واقعی، این تابع باید ویژگی‌های ورودی را پردازش کند.
-    # در این شبیه‌سازی:
     amount = transaction["amount"]
-    # مثال ساده: اگر amount > 300، احتمال fraud بالا؛ اگر بین 150 تا 300، احتمالا Dispute؛ در غیر این صورت Not Fraud.
     if amount > 300:
         prob = 0.85
         label = "Fraud"
@@ -56,10 +53,9 @@ def predict_fraud(transaction):
     return label, prob
 
 ##############################
-# گام ۶: تابع تحلیل Dispute توسط LLM (با Prompt دقیق و اضافه کردن Recommendation)
+# گام ۶: تابع تحلیل Dispute توسط LLM (با Prompt دقیق، Few-shot Example و Recommendation)
 ##############################
 def analyze_dispute_with_llm(transaction_info):
-    # ایجاد متن کامل اعتراض با استفاده از اطلاعات تراکنش
     dispute_text = (
         f"Transaction ID: {transaction_info['id']}\n"
         f"Amount: ${transaction_info['amount']}\n"
@@ -73,7 +69,15 @@ def analyze_dispute_with_llm(transaction_info):
     
     prompt = f"""
 You are a specialized Fraud Dispute Analysis assistant.
-Analyze the following disputed transaction details:
+Below is an example of the correct output format:
+
+Original Dispute Text: I never authorized this purchase of $100 at StoreX.
+Intent Category: Unauthorized/Fraud
+Fraud Risk Score: High
+AI-generated Summary: The customer denies the purchase, indicating potential fraud.
+Recommendation: Escalate the case to the internal fraud team.
+
+Now, analyze the following disputed transaction details:
 
 {dispute_text}
 
@@ -118,7 +122,6 @@ def show_llm_page():
     st.write("Debug LLM result (raw):")
     st.write(llm_result)
     
-    # Parse خروجی LLM به فرض فرمت تعیین‌شده
     lines = llm_result.splitlines()
     original_text = ""
     intent = ""
@@ -169,7 +172,6 @@ def show_main_page():
     st.header("Normal Transaction Analysis (XGBoost Simulation)")
     for transaction in normal_transactions:
         st.write("---")
-        # نمایش اطلاعات تراکنش در قالب یک کارت
         cols = st.columns([3, 2])
         with cols[0]:
             st.markdown(f"**Transaction ID:** {transaction['id']}")
@@ -183,7 +185,6 @@ def show_main_page():
             label, prob = predict_fraud(transaction)
             st.markdown(f"**XGBoost Label:** {label}")
             st.markdown(f"**Probability:** {prob:.2f}")
-            # اگر خروجی برابر "Dispute Transaction" باشد، دکمه Analyze with AI Assistant نمایش داده شود
             if label == "Dispute Transaction":
                 if st.button(f"Analyze with AI Assistant - {transaction['id']}", key=f"btn_{transaction['id']}"):
                     st.session_state.selected_transaction = transaction
@@ -204,3 +205,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
